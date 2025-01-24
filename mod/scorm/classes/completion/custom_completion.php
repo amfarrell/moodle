@@ -42,7 +42,7 @@ class custom_completion extends activity_custom_completion {
      * @param string $rule The completion rule.
      * @return int The completion state.
      */
-    public function get_state(string $rule): int {
+    public function get_state(string $rule): int { // We can see here that the completion status is still binary.
         global $DB;
 
         $this->validate_rule($rule);

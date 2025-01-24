@@ -587,7 +587,7 @@ function scorm_cron_scheduled_task () {
  * @param int $userid optional user id, 0 means all users
  * @return array array of grades, false if none
  */
-function scorm_get_user_grades($scorm, $userid=0) {
+function scorm_get_user_grades($scorm, $userid=0) { // breadcrumb.
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/scorm/locallib.php');
 
