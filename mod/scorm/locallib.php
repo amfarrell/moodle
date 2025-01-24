@@ -99,10 +99,10 @@ function scorm_get_popup_options_array() {
  * @return array an array of what grade options
  */
 function scorm_get_grade_method_array() {
-    return array (GRADESCOES => get_string('gradescoes', 'scorm'),
+    return array (GRADESCOES => get_string('gradescoes', 'scorm'), // Base grades on the number of SCOs completed.
                   GRADEHIGHEST => get_string('gradehighest', 'scorm'),
                   GRADEAVERAGE => get_string('gradeaverage', 'scorm'),
-                  GRADESUM => get_string('gradesum', 'scorm'));
+                  GRADESUM => get_string('gradesum', 'scorm')); // Or base grades on the sum of the grades of the SCOs.
 }
 
 /**
@@ -111,10 +111,10 @@ function scorm_get_grade_method_array() {
  * @return array an array of what grade options
  */
 function scorm_get_what_grade_array() {
-    return array (HIGHESTATTEMPT => get_string('highestattempt', 'scorm'),
+    return array (HIGHESTATTEMPT => get_string('highestattempt', 'scorm'), // needs to be set to highest score.
                   AVERAGEATTEMPT => get_string('averageattempt', 'scorm'),
                   FIRSTATTEMPT => get_string('firstattempt', 'scorm'),
-                  LASTATTEMPT => get_string('lastattempt', 'scorm'));
+                  LASTATTEMPT => get_string('lastattempt', 'scorm')); // or set to the last score.
 }
 
 /**
@@ -498,7 +498,7 @@ function scorm_insert_track($userid, $scormid, $scoid, $attemptornumber, $elemen
                     $track = new stdClass();
                     $track->scoid = $scoid;
                     $track->attemptid = $attempt->id;
-                    $track->elementid = scorm_get_elementid('objectiveprogressstatus');
+                    $track->elementid = scorm_get_elementid('objectiveprogressstatus'); // Could store the percent complete here.
                     $track->value = $objectiveprogressstatus;
                     $track->timemodified = time();
                     $id = $DB->insert_record('scorm_scoes_value', $track);
@@ -735,18 +735,18 @@ function scorm_grade_user_attempt($scorm, $userid, $attempt=1) {
     $attemptscore->sum = 0;
     $attemptscore->lastmodify = 0;
 
-    if (!$scoes = $DB->get_records('scorm_scoes', array('scorm' => $scorm->id), 'sortorder, id')) {
+    if (!$scoes = $DB->get_records('scorm_scoes', array('scorm' => $scorm->id), 'sortorder, id')) { // We get all of the SCOs
         return null;
     }
 
     foreach ($scoes as $sco) {
         if ($userdata = scorm_get_tracks($sco->id, $userid, $attempt)) {
             if (($userdata->status == 'completed') || ($userdata->status == 'passed')) {
-                $attemptscore->scoes++;
+                $attemptscore->scoes++; // We could count the number of scos that were completed or passed
             }
             if (!empty($userdata->score_raw) || (isset($scorm->type) && $scorm->type == 'sco' && isset($userdata->score_raw))) {
                 $attemptscore->values++;
-                $attemptscore->sum += $userdata->score_raw;
+                $attemptscore->sum += $userdata->score_raw; // We could also count the sum of the scores for all the scos
                 $attemptscore->max = ($userdata->score_raw > $attemptscore->max) ? $userdata->score_raw : $attemptscore->max;
                 if (isset($userdata->timemodified) && ($userdata->timemodified > $attemptscore->lastmodify)) {
                     $attemptscore->lastmodify = $userdata->timemodified;
@@ -780,7 +780,7 @@ function scorm_grade_user_attempt($scorm, $userid, $attempt=1) {
     return $score;
 }
 
-function scorm_grade_user($scorm, $userid) {
+function scorm_grade_user($scorm, $userid) { // Here is where we grade the user.
 
     // Ensure we dont grade user beyond $scorm->maxattempt settings.
     $lastattempt = scorm_get_last_attempt($scorm->id, $userid);
@@ -793,12 +793,12 @@ function scorm_grade_user($scorm, $userid) {
             return scorm_grade_user_attempt($scorm, $userid, scorm_get_first_attempt($scorm->id, $userid));
         break;
         case LASTATTEMPT:
-            return scorm_grade_user_attempt($scorm, $userid, scorm_get_last_completed_attempt($scorm->id, $userid));
+            return scorm_grade_user_attempt($scorm, $userid, scorm_get_last_completed_attempt($scorm->id, $userid)); // Or we could use this function.
         break;
-        case HIGHESTATTEMPT:
+        case HIGHESTATTEMPT: // Assume we use this setting.
             $maxscore = 0;
             for ($attempt = 1; $attempt <= $lastattempt; $attempt++) {
-                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt);
+                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt); // So we call this function.
                 $maxscore = $attemptscore > $maxscore ? $attemptscore : $maxscore;
             }
             return $maxscore;
